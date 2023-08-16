@@ -4,13 +4,12 @@
 
 - [Model Hub](#model-hub)
   - [Table of Contents](#table-of-contents)
-  - [About](#about)
-  - [Getting Started](#getting-started)
-    - [Installing](#installing)
-  - [Usage](#usage)
+  - [About ](#about-)
+  - [Getting Started ](#getting-started-)
+    - [Installing ](#installing-)
+  - [Usage ](#usage-)
 
-## About <a name = "about"></a>path = Path('damaged_or_not')
-
+## About <a name = "about"></a>
 I write quite a few models, for practice, work, research or fun. Most of these models are pretty small. Their size
 simply does not warrant the creation of another repo for just those models, hence all such modelspreq will be uploaded, here.
 I plan to upload the model files as well. Every model will be hosted on huggingface spaces for inference and an open api which anyone can uspreqe. My goal with this project is to encourage myself to work on more utility based models and integrating them as this task should be extremely easy using the api.
