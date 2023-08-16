@@ -5,9 +5,9 @@
 - [Model Hub](#model-hub)
   - [Table of Contents](#table-of-contents)
   - [About](#about)
-  - [Getting Started](#getting-started-)
-    - [Installing](#installing-)
-  - [Usage](#usage-)
+  - [Getting Started](#getting-started)
+    - [Installing](#installing)
+  - [Usage](#usage)
 
 ## About <a name = "about"></a>path = Path('damaged_or_not')
 
