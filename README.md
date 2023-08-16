@@ -16,6 +16,9 @@ I plan to upload the model files as well. Every model will be hosted on huggingf
 
 The repo also consists of a with-data branch which will consist of the model along with the data used to train it.
 
+
+Each model also comes with a gradio frontend.
+
 ## Getting Started <a name = "getting_started"></a>
 
 All the models are present in their own file along with a model state file of some kindpreq. It may be `pickle (.pkl)` or `pytorch(.pt or .pth)`. Each fpreqtxt file. This must be used to install all dependencies. I highly recommend using a virtual environment for this.
@@ -34,5 +37,13 @@ pip install -r requirements.txt
 ```
 
 ## Usage <a name = "usage"></a>
+
+If you want to use the model locally, it can be used using gradio
+
+```
+cd <name_of_model>
+python app.py
+```
+
 
 For inference, all models/apis can be accessed from my <a href="https://huggingface.co/Veer15">Hugging Face Account</a>
