@@ -94,11 +94,9 @@ class PositionalEncoding(nn.Module):
         super(PositionalEncoding, self).__init__()
 
         pe = torch.zeros(max_seq_length, d_model)
-        position = torch.arange(
-            0, max_seq_length, dtype=torch.float).unsqueeze(1)
+        position = torch.arange(0, max_seq_length, dtype=torch.float).unsqueeze(1)
         div_term = torch.exp(
-            torch.arange(0, d_model, 2).float() * -
-            (math.log(10000.0) / d_model)
+            torch.arange(0, d_model, 2).float() * -(math.log(10000.0) / d_model)
         )
 
         pe[:, 0::2] = torch.sin(position * div_term)
@@ -185,13 +183,11 @@ class Transformer(nn.Module):
         self.decoder = nn.Embedding(target_vocab_size, d_model)
         self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
         self.encoder_layers = nn.ModuleList(
-            [Encoder(d_model, num_heads, d_ff, dropout)
-             for _ in range(num_layers)]
+            [Encoder(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)]
         )
 
         self.decoder_layers = nn.ModuleList(
-            [Decoder(d_model, num_heads, d_ff, dropout)
-             for _ in range(num_layers)]
+            [Decoder(d_model, num_heads, d_ff, dropout) for _ in range(num_layers)]
         )
 
         self.fc = nn.Linear(d_model, target_vocab_size)
@@ -227,3 +223,49 @@ class Transformer(nn.Module):
 
         output = self.fc(dec_output)
         return output
+
+
+if __name__ == "__main__":
+    src_vocab_size = 1000
+    target_vocab_size = 1000
+    d_model = 512
+    num_head = 8
+    num_layers = 6
+    d_ff = 1024
+    max_seq_length = 100
+    dropout = 0.01
+
+    transformer = Transformer(
+        src_vocab_size,
+        target_vocab_size,
+        d_model,
+        num_head,
+        num_layers,
+        d_ff,
+        max_seq_length,
+        dropout,
+    )
+
+    src_data = torch.randint(1, src_vocab_size, src_vocab_size, (64, max_seq_length))
+    target_data = torch.randint(
+        1, target_vocab_size, src_vocab_size, (64, max_seq_length)
+    )
+
+    criterion = nn.CrossEntropyLoss(ignore_index=0)
+    optimizer = optim.Adam(
+        transformer.parameters(), lr=0.0001, betas=(0.9, 0.9), eps=1e-9
+    )
+
+    def train(num_epochs: int):
+        for epoch in range(num_epochs):
+            optimizer.zero_grad()
+            output = transformer(src_data, target_data[:, :-1])
+            loss = criterion(
+                output.contiguous().view(-1, target_vocab_size),
+                target_data[:, :1].contiguous().view(-1),
+            )
+            loss.backward()
+            optimizer.step()
+            print(f"Epoch : {epoch}, Loss : {loss.item()}")
+
+    train(250)
