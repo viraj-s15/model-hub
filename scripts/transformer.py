@@ -89,6 +89,27 @@ class MultiHeadAttention(nn.Module):
 # of this layer into a simple feed forward neural network
 
 
+class PositionalEncoding(nn.Module):
+    def __init__(self, d_model, max_seq_length):
+        super(PositionalEncoding, self).__init__()
+
+        pe = torch.zeros(max_seq_length, d_model)
+        position = torch.arange(
+            0, max_seq_length, dtype=torch.float).unsqueeze(1)
+        div_term = torch.exp(
+            torch.arange(0, d_model, 2).float() * -
+            (math.log(10000.0) / d_model)
+        )
+
+        pe[:, 0::2] = torch.sin(position * div_term)
+        pe[:, 1::2] = torch.cos(position * div_term)
+
+        self.register_buffer("pe", pe.unsqueeze(0))
+
+    def forward(self, x):
+        return x + self.pe[:, : x.size(1)]
+
+
 class FeedForwardNn(nn.Module):
     def __init__(self, d_model, d_ff):
         super(FeedForwardNn, self).__init()
@@ -142,3 +163,67 @@ class Decoder(nn.Module):
         ff_output = self.feed_forward(x)
         x = self.norm3(x + self.dropout(ff_output))
         return x
+
+
+# We have all the classes needed to create a transformer
+
+
+class Transformer(nn.Module):
+    def __init__(
+        self,
+        src_vocab_size,
+        target_vocab_size,
+        d_model,
+        num_heads,
+        num_layers,
+        d_ff,
+        max_seq_length,
+        dropout,
+    ):
+        self(Transformer, self).__init__()
+        self.encoder = nn.Embedding(src_vocab_size, d_model)
+        self.decoder = nn.Embedding(target_vocab_size, d_model)
+        self.positional_encoding = PositionalEncoding(d_model, max_seq_length)
+        self.encoder_layers = nn.ModuleList(
+            [Encoder(d_model, num_heads, d_ff, dropout)
+             for _ in range(num_layers)]
+        )
+
+        self.decoder_layers = nn.ModuleList(
+            [Decoder(d_model, num_heads, d_ff, dropout)
+             for _ in range(num_layers)]
+        )
+
+        self.fc = nn.Linear(d_model, target_vocab_size)
+        self.dropout = nn.Dropout(dropout)
+
+    def generate_mask(self, src, target):
+        src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
+        target_mask = (target != 0).unsqueeze(1).unsqueeze(2)
+        seq_len = target.size(1)
+
+        nopeak_mask = (
+            1 - torch.triu(torch.ones(1, seq_len, seq_len), diagonal=1)
+        ).bool()
+        target_mask = target_mask & nopeak_mask
+        return src_mask, target_mask
+
+    def forward(self, src, target):
+        src_mask, tgt_mask = self.generate_mask(src, target)
+        src_embedded = self.dropout(
+            self.positional_encoding(self.encoder_embedding(src))
+        )
+        tgt_embedded = self.dropout(
+            self.positional_encoding(self.decoder_embedding(target))
+        )
+
+        enc_output = src_embedded
+        for enc_layer in self.encoder_layers:
+            enc_output = enc_layer(enc_output, src_mask)
+
+        dec_output = tgt_embedded
+        for dec_layer in self.decoder_layers:
+            dec_output = dec_layer(dec_output, enc_output, src_mask, tgt_mask)
+
+        output = self.fc(dec_output)
+        return output
