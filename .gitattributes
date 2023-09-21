@@ -1,0 +1,2 @@
+model.pth filter=lfs diff=lfs merge=lfs -text
+is_sign_forged/model/model.pth filter=lfs diff=lfs merge=lfs -text
